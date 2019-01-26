@@ -1,3 +1,17 @@
+# BUILD IMAGE
+FROM microsoft/dotnet:sdk AS build-env
+WORKDIR /app
+
+# Copy csproj and restore as distinct layers
+COPY *.csproj ./
+RUN dotnet restore
+
+# Copy everything else and build
+COPY . ./
+RUN dotnet publish -c Release -o out
+
+
+# RUNTIME IMAGE
 FROM influxdb:1.6.0-alpine as influxdb
 
 FROM microsoft/dotnet:2.1-runtime-alpine3.7
@@ -22,5 +36,5 @@ ENV BACKUP_FILENAME="Influxdb_backup"
 # ---------------------------------------------------------------------------------- #
 
  WORKDIR /app
- COPY bin/*/netcoreapp2.1/* ./
+ COPY --from=build-env /app/out .
  ENTRYPOINT [ "dotnet", "InfluxdbBackup.dll" ]
