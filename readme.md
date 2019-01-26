@@ -75,7 +75,7 @@ networks:
 | `BACKUP_MAXBACKUPS` | Number of backups to maintain on backup medium (max 99)  | `99` | `1`   | Yes |
 | `BACKUP_FILENAME` | Prefix name for the database backup file | `cAdvisor_Backup` | `influxdbbackup`   | Yes |
 
-###Backup medium specific
+### Backup medium specific
 ```yaml
 INFLUXDB_BACKUPMEDIUM: "Azureblob"
 ```
