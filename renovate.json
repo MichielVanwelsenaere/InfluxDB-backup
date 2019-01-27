@@ -1,0 +1,7 @@
+{
+  "assignees": ["@MichielVanwelsenaere"],
+  "labels":["dependencies"],
+  "extends": [
+    "config:base"
+  ]
+}
