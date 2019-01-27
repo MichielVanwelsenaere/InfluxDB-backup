@@ -1,6 +1,7 @@
 # InfluxDB backup docker image
 ![Release version](https://img.shields.io/github/release/MichielVanwelsenaere/InfluxDB-backup.svg)
 ![Image Size](https://img.shields.io/microbadger/image-size/michielvanwelsenaere/influxdb-backup.svg)
+[![Renovate enabled](https://img.shields.io/badge/renovate-enabled-brightgreen.svg)](https://renovatebot.com/)
 ![build pipeline](https://michielvanwelsenaere.visualstudio.com/Public/_apis/build/status/InfluxDB-backup-Release)
 ![release pipeline](https://michielvanwelsenaere.vsrm.visualstudio.com/_apis/public/Release/badge/c40cb7e2-85fc-4ca0-b71e-da4ac6783b50/1/1)
 ![License](https://img.shields.io/github/license/MichielVanwelsenaere/InfluxDB-backup.svg)
@@ -20,13 +21,13 @@ related influxDB docs to this can be found [here](https://docs.influxdata.com/in
 ## Usage
 Example using docker-compose:
 
-Cron 1am daily, Influxdb port 8088, backup files persisted on Azure blob, all databases are backuped. Backups are created with prefix name 'MyBackupFileNamePrefix' in container 'customContainername', 99 backups maintained in total on backup medium.
+Cron 1am daily, InfluxDB port 8088, backup files persisted on Azure blob, all databases are backuped. Backups are created with prefix name 'MyBackupFileNamePrefix' in container 'customContainername', 99 backups maintained in total on backup medium.
 
 ```yaml
 version: '3.5'
 
 services:
-  # Influxdb to persist data
+  # InfluxDB to persist data
   Influxdb:
     hostname: "Influxdatabase"
     image: "influxdb:1.6.4"
@@ -42,7 +43,7 @@ services:
         aliases:
           - "influxdatabase"
 
-    # For backing up influxdb
+    # For backing up influxDB
   InfluxdbBackup:
     image: "michielvanwelsenaere/influxdb-backup:latest"
     environment:
@@ -89,7 +90,7 @@ more information on how to create an Azure storage account can be found [here](h
 
 | Variable        | Description      | Example Usage  | Default   | Optional?  |
 | --------------- |:---------------| -----:| -----:| --------:|
-| `AZURE_STORAGEACCOUNT_NAME` | Name of the Azure storage account to persist backuk file to | `cadvisordailybackup` | None   | No |
-| `AZURE_STORAGEACCOUNT_KEY` | Key of the Azure storage account to persist backuk file to  | `Secret key` | None   | No |
+| `AZURE_STORAGEACCOUNT_NAME` | Name of the Azure storage account to persist backup file to | `cadvisordailybackup` | None   | No |
+| `AZURE_STORAGEACCOUNT_KEY` | Key of the Azure storage account to persist backup file to  | `{Secret key}` | None   | No |
 | `AZURE_STORAGEACCOUNT_CONTAINER` | Azure blob container to persist the backup file to, will be created if not exists  | `cadvisordailybackup` | `influxdbbackup`   | Yes |
 
