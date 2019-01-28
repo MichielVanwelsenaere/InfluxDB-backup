@@ -2,7 +2,7 @@
 ![Release version](https://img.shields.io/github/release/MichielVanwelsenaere/InfluxDB-backup.svg)
 ![Image Size](https://img.shields.io/microbadger/image-size/michielvanwelsenaere/influxdb-backup.svg)
 [![Renovate enabled](https://img.shields.io/badge/renovate-enabled-brightgreen.svg)](https://renovatebot.com/)
-![build pipeline](https://michielvanwelsenaere.visualstudio.com/Public/_apis/build/status/InfluxDB-backup-Release)
+![build pipeline](https://michielvanwelsenaere.visualstudio.com/Public/_apis/build/status/InfluxDB-backup-CI?branchName=master)
 ![release pipeline](https://michielvanwelsenaere.vsrm.visualstudio.com/_apis/public/Release/badge/c40cb7e2-85fc-4ca0-b71e-da4ac6783b50/1/1)
 ![License](https://img.shields.io/github/license/MichielVanwelsenaere/InfluxDB-backup.svg)
 
