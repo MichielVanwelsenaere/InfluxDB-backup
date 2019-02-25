@@ -1,5 +1,6 @@
 ﻿using InfluxdbBackup.Helpers;
 using InfluxdbBackup.Interfaces;
+using NLog;
 using Quartz;
 using System;
 using System.Collections.Generic;
@@ -12,41 +13,61 @@ namespace InfluxdbBackup.DatabaseJobs
     {
         private IBackupMedium _backupMedium;
         private FileSystemHelper _fileSystemHelper = new FileSystemHelper();
+        private readonly ILogger _logger;
 
-        public RestoreFullBackupJob(IBackupMedium backupMedium)
+        public RestoreFullBackupJob(IBackupMedium backupMedium, ILogger logger)
         {
             this._backupMedium = backupMedium;
+            _logger = logger;
         }
 
         public async Task Execute(IJobExecutionContext context)
         {
-            _fileSystemHelper.CreateDirectoryIfNotExists(ConfigurationManager.RestoreDirectory);
-            _fileSystemHelper.RemoveFiles(ConfigurationManager.RestoreDirectory, "*");
-            var latestbackupname = await _backupMedium.DownloadLatestBackupAsync(ConfigurationManager.RestoreDirectory);
-
-            _fileSystemHelper.ExtractTarGZ(String.Concat(ConfigurationManager.RestoreDirectory, @"/", latestbackupname), ConfigurationManager.RestoreDirectory);
+            _logger.Info("Cron triggered, executing database job...");
+            try
+            {
+                _logger.Info("Validating database job specific environment variables");
+                ValidateEnvironmentVariables();
+                _logger.Info("Database job specific environment variables validated succesfully!");
+            }
+            catch (Exception e)
+            {
+                _logger.Fatal("Validating specific database Job environment variables failed: {0}", e.Message.ToString());
+            }
 
             try
             {
-                InfluxDbCommandHelper.RestoreInfluxBackup(
-                    Environment.GetEnvironmentVariable("INFLUXDB_HOST"),
-                    int.Parse(Environment.GetEnvironmentVariable("INFLUXDB_PORT")),
-                    Environment.GetEnvironmentVariable("INFLUXDB_DATABASE"),
-                    ConfigurationManager.RestoreDirectory);
+                _fileSystemHelper.CreateDirectoryIfNotExists(ConfigurationHelper.RestoreDirectory);
+                _fileSystemHelper.RemoveFiles(ConfigurationHelper.RestoreDirectory, "*");
+                var latestbackupname = await _backupMedium.DownloadLatestBackupAsync(ConfigurationHelper.RestoreDirectory);
+
+                _fileSystemHelper.ExtractTarGZ(String.Concat(ConfigurationHelper.RestoreDirectory, @"/", latestbackupname), ConfigurationHelper.RestoreDirectory);
+
+                try
+                {
+                    InfluxDbCommandHelper.RestoreInfluxBackup(
+                        Environment.GetEnvironmentVariable("INFLUXDB_HOST"),
+                        int.Parse(Environment.GetEnvironmentVariable("INFLUXDB_PORT")),
+                        Environment.GetEnvironmentVariable("INFLUXDB_DATABASE"),
+                        ConfigurationHelper.RestoreDirectory,
+                        _logger);
+                }
+                catch (System.Exception e)
+                {
+                    throw e;
+                }
+
+                //cleanup here
+                _fileSystemHelper.RemoveFiles(ConfigurationHelper.RestoreDirectory, "*");
+                _logger.Info("Database job completed succesfully!");
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
-                SimpleConsoleLogger.Log(SimpleConsoleLogger.LogLevel.Critical, "RestoreJob failed: {0}", e.Message.ToString());
-                throw e;
+                _logger.Fatal("Database job failed: {0}", e.Message.ToString());
             }
-
-            //cleanup here
-            _fileSystemHelper.RemoveFiles(ConfigurationManager.RestoreDirectory, "*");
+            
         }
-
-
-        
-
+      
         public void ValidateEnvironmentVariables()
         {
             //there are no specific environment variables required for a full influxdb restore so we'll just do a return here

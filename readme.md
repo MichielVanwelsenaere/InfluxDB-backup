@@ -21,7 +21,7 @@ related influxDB docs to this can be found [here](https://docs.influxdata.com/in
 ## Usage
 Example using docker-compose:
 
-Cron 1am daily, InfluxDB port 8088, backup files persisted on Azure blob, all databases are backuped. Backups are created with prefix name 'MyBackupFileNamePrefix' in container 'customContainername', 99 backups maintained in total on backup medium.
+Cron 1am daily, InfluxDB port 8088, backup files persisted on Azure blob, all databases are backuped. Backups are created with prefix name 'MyBackupFileNamePrefix' in container 'customContainername', 99 backups maintained in total on backup medium. Logfiles are persisted locally.
 
 ```yaml
 version: '3.5'
@@ -46,6 +46,8 @@ services:
     # For backing up influxDB
   InfluxdbBackup:
     image: "michielvanwelsenaere/influxdb-backup:latest"
+    volumes:
+      - "./influxdbbackup/log:/influxdbbackup/log"
     environment:
       INFLUXDB_ACTION: "fullbackup"
       INFLUXDB_ACTION_CRON: "0 0 1 1/1 * ? *"
