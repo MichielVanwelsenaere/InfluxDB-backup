@@ -36,6 +36,7 @@ namespace InfluxdbBackup.BackupMedium
             //upload the backup to Azure blob
             try
             {
+                _logger.Info("Attempting to upload backup to Azure, blobname: {0}", fileName);
                 CloudBlobClient cloudBlobClient = new CloudStorageAccount(storageCredentials, useHttps: true).CreateCloudBlobClient();
                 CloudBlobContainer cloudBlobContainer = cloudBlobClient.GetContainerReference(Environment.GetEnvironmentVariable("AZURE_STORAGEACCOUNT_CONTAINER"));
                 await cloudBlobContainer.CreateIfNotExistsAsync(_resillientRequestOptions, null);
@@ -88,7 +89,6 @@ namespace InfluxdbBackup.BackupMedium
                 throw e;
             }
         }
-
 
         public async Task RemoveOldBackupsAsync(int maximumAllowedBackups)
         {

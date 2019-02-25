@@ -29,6 +29,7 @@ namespace InfluxdbBackup.DatabaseJobs
             {
                 _logger.Info("Validating database job specific environment variables");
                 ValidateEnvironmentVariables();
+                _logger.Info("Database job specific environment variables validated succesfully!");
             }
             catch (Exception e)
             {
@@ -63,13 +64,13 @@ namespace InfluxdbBackup.DatabaseJobs
                 //clean up
                 _fileSystemHelper.RemoveDirectory(ConfigurationHelper.BackupDirectory);
                 _fileSystemHelper.RemoveFiles(Directory.GetCurrentDirectory(), "*.tar.gz");
+                _logger.Info("Database job completed succesfully!");
             }
             catch (Exception e)
             {
                 _logger.Fatal("Database job failed: {0}", e.Message.ToString());
             }            
         }
-
 
         public void ValidateEnvironmentVariables()
         {

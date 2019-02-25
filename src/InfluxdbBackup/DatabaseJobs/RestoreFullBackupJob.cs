@@ -28,6 +28,7 @@ namespace InfluxdbBackup.DatabaseJobs
             {
                 _logger.Info("Validating database job specific environment variables");
                 ValidateEnvironmentVariables();
+                _logger.Info("Database job specific environment variables validated succesfully!");
             }
             catch (Exception e)
             {
@@ -58,6 +59,7 @@ namespace InfluxdbBackup.DatabaseJobs
 
                 //cleanup here
                 _fileSystemHelper.RemoveFiles(ConfigurationHelper.RestoreDirectory, "*");
+                _logger.Info("Database job completed succesfully!");
             }
             catch (Exception e)
             {
@@ -65,10 +67,7 @@ namespace InfluxdbBackup.DatabaseJobs
             }
             
         }
-
-
-        
-
+      
         public void ValidateEnvironmentVariables()
         {
             //there are no specific environment variables required for a full influxdb restore so we'll just do a return here
