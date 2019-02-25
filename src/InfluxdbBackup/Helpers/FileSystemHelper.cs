@@ -65,12 +65,10 @@ namespace InfluxdbBackup.Helpers
 
             // Optionally, write an entry for the directory itself.
             // Specify false for recursion here if we will add the directory's files individually.
-            //
             TarEntry tarEntry = TarEntry.CreateEntryFromFile(sourceDirectory);
             tarArchive.WriteEntry(tarEntry, false);
 
             // Write each file to the tar.
-            //
             string[] filenames = Directory.GetFiles(sourceDirectory);
             foreach (string filename in filenames)
             {
