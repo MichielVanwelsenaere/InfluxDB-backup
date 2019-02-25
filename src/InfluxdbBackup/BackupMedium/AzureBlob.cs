@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using NLog;
 
 namespace InfluxdbBackup.BackupMedium
 {
@@ -18,6 +19,12 @@ namespace InfluxdbBackup.BackupMedium
         {
             RetryPolicy = new LinearRetry(TimeSpan.FromMilliseconds(500), 5)
         };
+        private readonly ILogger _logger;
+
+        public AzureBlob(ILogger logger)
+        {
+            _logger = logger;
+        }
 
         public async Task UploadBackupAsync(string fileName)
         {
@@ -34,11 +41,11 @@ namespace InfluxdbBackup.BackupMedium
                 await cloudBlobContainer.CreateIfNotExistsAsync(_resillientRequestOptions, null);
                 CloudBlockBlob cloudBlockBlob = cloudBlobContainer.GetBlockBlobReference(fileName);
                 await cloudBlockBlob.UploadFromFileAsync(fileName, null, _resillientRequestOptions, null);
-                SimpleConsoleLogger.Log(SimpleConsoleLogger.LogLevel.Info, "Succesfuly uploaded backup to Azure, blobname: {0}", fileName);
+                _logger.Info("Succesfully uploaded backup to Azure, blobname: {0}", fileName);
             }
             catch (Exception e)
             {
-                SimpleConsoleLogger.Log(SimpleConsoleLogger.LogLevel.Critical, "Failed to upload backup to Azure! {0}", e.Message.ToString());
+                _logger.Fatal("Failed to upload backup to Azure! {0}", e.Message.ToString());
                 throw e;
             }
         }
@@ -67,17 +74,17 @@ namespace InfluxdbBackup.BackupMedium
                         latestbackup = blob;
                 }
 
-                SimpleConsoleLogger.Log(SimpleConsoleLogger.LogLevel.Info, "Found {0} backup(s) on Azure blob storage", results.Results.Count<IListBlobItem>());
-                SimpleConsoleLogger.Log(SimpleConsoleLogger.LogLevel.Info, "Attempting to download latest backup {0} from Azure blob..", latestbackup.Name);
+                _logger.Info("Found {0} backup(s) on Azure blob storage", results.Results.Count<IListBlobItem>());
+                _logger.Info("Attempting to download latest backup {0} from Azure blob..", latestbackup.Name);
                 await latestbackup.DownloadToFileAsync(String.Concat(DestinationDirectory, @"/" ,latestbackup.Name), System.IO.FileMode.CreateNew, null, _resillientRequestOptions, null);
-                SimpleConsoleLogger.Log(SimpleConsoleLogger.LogLevel.Info, "Downloaded latest backup {0} succesfully from Azure blob!", latestbackup.Name);
+                _logger.Info("Downloaded latest backup {0} succesfully from Azure blob!", latestbackup.Name);
 
                 return latestbackup.Name;
 
             }
             catch (Exception e)
             {
-                SimpleConsoleLogger.Log(SimpleConsoleLogger.LogLevel.Critical, "Failed to download latest backup from Azure blob storage! {0}", e.Message.ToString());
+                _logger.Fatal("Failed to download latest backup from Azure blob storage! {0}", e.Message.ToString());
                 throw e;
             }
         }
@@ -111,43 +118,43 @@ namespace InfluxdbBackup.BackupMedium
                     }
                     catch (Exception e)
                     {
-                        SimpleConsoleLogger.Log(SimpleConsoleLogger.LogLevel.Warning, "failed to fetch attribues for blob {0} with uri {1}: {2}", blockblob.Name, blockblob.StorageUri, e.Message.ToString());
+                        _logger.Warn("failed to fetch attribues for blob {0} with uri {1}: {2}", blockblob.Name, blockblob.StorageUri, e.Message.ToString());
                     }
                 }
 
-                SimpleConsoleLogger.Log(SimpleConsoleLogger.LogLevel.Info, "Found {0} backups on Azure blob storage", Containerblobs.Count);
+                _logger.Info("Found {0} backups on Azure blob storage", Containerblobs.Count);
 
                 if (Containerblobs.Count > maximumAllowedBackups)
                 {
-                    SimpleConsoleLogger.Log(SimpleConsoleLogger.LogLevel.Info, "{0} backups on Azure blob storage exceed the maximum allowed number of backups {1}", Containerblobs.Count, maximumAllowedBackups);
+                    _logger.Info("{0} backups on Azure blob storage exceed the maximum allowed number of backups {1}", Containerblobs.Count, maximumAllowedBackups);
                     var numberOfBackupsToRemove = Containerblobs.Count - maximumAllowedBackups;
-                    SimpleConsoleLogger.Log(SimpleConsoleLogger.LogLevel.Info, "{0} backups need to be removed from Azure blob storage", numberOfBackupsToRemove);
+                    _logger.Info("{0} backups need to be removed from Azure blob storage", numberOfBackupsToRemove);
                     IEnumerable<Tuple<Uri, DateTimeOffset?>> blobsToRemove = Containerblobs.OrderBy(x => x.Item2).Take(numberOfBackupsToRemove);
 
                     foreach (Tuple<Uri, DateTimeOffset?> blobItem in blobsToRemove)
                     {
-                        SimpleConsoleLogger.Log(SimpleConsoleLogger.LogLevel.Info, "Attempting to remove backup blob {0} ...", blobItem.Item1.ToString());
+                        _logger.Info("Attempting to remove backup blob {0} ...", blobItem.Item1.ToString());
                         var blockblob = cloudBlobContainer.GetBlockBlobReference(new CloudBlockBlob(blobItem.Item1).Name);
                         await blockblob.DeleteAsync(DeleteSnapshotsOption.IncludeSnapshots, null, _resillientRequestOptions, null);
-                        SimpleConsoleLogger.Log(SimpleConsoleLogger.LogLevel.Info, "backup blob {0} removed succesfully!", blobItem.Item1.ToString());
+                        _logger.Info("backup blob {0} removed succesfully!", blobItem.Item1.ToString());
                     }
                 }
                 else
                 {
-                    SimpleConsoleLogger.Log(SimpleConsoleLogger.LogLevel.Info, "{0} backups on Azure blob storage does not exceed the maximum allowed number of backups {1}, no backups were removed...", Containerblobs.Count, maximumAllowedBackups);
+                    _logger.Info("{0} backups on Azure blob storage does not exceed the maximum allowed number of backups {1}, no backups were removed...", Containerblobs.Count, maximumAllowedBackups);
                 }
             }
             catch (Exception e)
             {
-                SimpleConsoleLogger.Log(SimpleConsoleLogger.LogLevel.Error, "Failed to remove old backups from Azure blob storage! {0}", e.Message.ToString());
+                _logger.Warn("Failed to remove old backups from Azure blob storage! {0}", e.Message.ToString());
                 throw e;
             }
         }        
 
         public void ValidateEnvironmentVariables()
         {
-            ConfigurationManager.VerifyEnvironmentVariable("AZURE_STORAGEACCOUNT_NAME", false);
-            ConfigurationManager.VerifyEnvironmentVariable("AZURE_STORAGEACCOUNT_KEY", false);
+            ConfigurationHelper.VerifyEnvironmentVariable("AZURE_STORAGEACCOUNT_NAME", false);
+            ConfigurationHelper.VerifyEnvironmentVariable("AZURE_STORAGEACCOUNT_KEY", false);
         }
     }
 }
