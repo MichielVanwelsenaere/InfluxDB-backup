@@ -3,8 +3,6 @@ using InfluxdbBackup.Interfaces;
 using NLog;
 using Quartz;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace InfluxdbBackup.DatabaseJobs
@@ -41,7 +39,7 @@ namespace InfluxdbBackup.DatabaseJobs
                 _fileSystemHelper.RemoveFiles(ConfigurationHelper.RestoreDirectory, "*");
                 var latestbackupname = await _backupMedium.DownloadLatestBackupAsync(ConfigurationHelper.RestoreDirectory);
 
-                _fileSystemHelper.ExtractTarGZ(String.Concat(ConfigurationHelper.RestoreDirectory, @"/", latestbackupname), ConfigurationHelper.RestoreDirectory);
+                _fileSystemHelper.ExtractZipToDirectory(String.Concat(ConfigurationHelper.RestoreDirectory, @"/", latestbackupname), ConfigurationHelper.RestoreDirectory);
 
                 try
                 {
