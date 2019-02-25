@@ -7,7 +7,6 @@ using Microsoft.WindowsAzure.Storage.Blob;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using NLog;
 
@@ -85,7 +84,7 @@ namespace InfluxdbBackup.BackupMedium
             }
             catch (Exception e)
             {
-                _logger.Fatal("Failed to download latest backup from Azure blob storage! {0}", e.Message.ToString());
+                _logger.Fatal("Failed to download latest backup from Azure blob storage: {0}", e.Message.ToString());
                 throw e;
             }
         }

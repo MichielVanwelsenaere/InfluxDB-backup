@@ -3,9 +3,6 @@ using InfluxdbBackup.Interfaces;
 using NLog;
 using Quartz;
 using System;
-using System.Collections.Generic;
-
-using System.Text;
 using System.Threading;
 
 namespace InfluxdbBackup

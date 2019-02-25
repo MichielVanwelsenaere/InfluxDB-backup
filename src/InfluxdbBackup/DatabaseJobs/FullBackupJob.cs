@@ -55,15 +55,15 @@ namespace InfluxdbBackup.DatabaseJobs
                 }
 
 
-                string filename = Environment.GetEnvironmentVariable("BACKUP_FILENAME") + DateTime.Now.ToString("yyyyMMddHHmmss") + ".tar.gz";
-                _fileSystemHelper.CreateTarGZ(filename, ConfigurationHelper.BackupDirectory);
+                string filename = Environment.GetEnvironmentVariable("BACKUP_FILENAME") + DateTime.Now.ToString("yyyyMMddHHmmss") + ".zip";
+                _fileSystemHelper.CreateZipFromDirectory(filename, ConfigurationHelper.BackupDirectory);
 
                 await _backupMedium.UploadBackupAsync(filename);
                 await _backupMedium.RemoveOldBackupsAsync(Int32.Parse(Environment.GetEnvironmentVariable("BACKUP_MAXBACKUPS")));
 
                 //clean up
                 _fileSystemHelper.RemoveDirectory(ConfigurationHelper.BackupDirectory);
-                _fileSystemHelper.RemoveFiles(Directory.GetCurrentDirectory(), "*.tar.gz");
+                _fileSystemHelper.RemoveFiles(Directory.GetCurrentDirectory(), "*.zip");
                 _logger.Info("Database job completed succesfully!");
             }
             catch (Exception e)

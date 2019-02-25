@@ -1,12 +1,7 @@
-using InfluxdbBackup.Helpers;
-using InfluxdbBackup.Interfaces;
 using InfluxdbBackup.Ninject;
 using Ninject;
 using NLog;
-using NLog.Extensions.Logging;
 using Quartz;
-using System;
-using System.Threading;
 
 namespace InfluxdbBackup
 {
