@@ -12,7 +12,7 @@ RUN dotnet publish -c Release -o out
 
 
 # RUNTIME IMAGE
-FROM influxdb:1.6.0-alpine as influxdb
+FROM influxdb:1.7.4-alpine as influxdb
 
 FROM microsoft/dotnet:2.1-runtime-alpine3.7
 COPY --from=influxdb /usr/bin/influxd /usr/bin/
