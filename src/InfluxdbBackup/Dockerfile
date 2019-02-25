@@ -35,6 +35,6 @@ ENV BACKUP_MAXBACKUPS="1"
 ENV BACKUP_FILENAME="Influxdb_backup"
 # ---------------------------------------------------------------------------------- #
 
- WORKDIR /influxdbbackup
+ WORKDIR /app
  COPY --from=build-env /app/out .
  ENTRYPOINT [ "dotnet", "InfluxdbBackup.dll" ]

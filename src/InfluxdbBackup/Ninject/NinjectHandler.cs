@@ -3,8 +3,6 @@ using InfluxdbBackup.DatabaseJobs;
 using InfluxdbBackup.Factories;
 using InfluxdbBackup.Interfaces;
 using Ninject;
-using NLog;
-using NLog.Extensions.Logging;
 using Quartz;
 using Quartz.Impl;
 using System;
@@ -52,11 +50,8 @@ namespace InfluxdbBackup.Ninject
                     throw new ArgumentException("database job type not found!");
             }
 
-            kernel.Bind<ILogger>().ToMethod(x =>
-            {
-                return LogManager.GetCurrentClassLogger();
-            });
 
+            
         }
     }
 }
