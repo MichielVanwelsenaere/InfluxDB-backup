@@ -79,7 +79,7 @@ namespace InfluxdbBackup.BackupMedium
                 await latestbackup.DownloadToFileAsync(String.Concat(DestinationDirectory, @"/" ,latestbackup.Name), System.IO.FileMode.CreateNew, null, _resillientRequestOptions, null);
                 _logger.Info("Downloaded latest backup {0} succesfully from Azure blob!", latestbackup.Name);
 
-                return latestbackup.Name;
+                return String.Concat(DestinationDirectory, @"/", latestbackup.Name);
 
             }
             catch (Exception e)
@@ -145,7 +145,7 @@ namespace InfluxdbBackup.BackupMedium
             }
             catch (Exception e)
             {
-                _logger.Warn("Failed to remove old backups from Azure blob storage! {0}", e.Message.ToString());
+                _logger.Warn("Failed to remove old backups from Azure blob storage: {0}", e.Message.ToString());
                 throw e;
             }
         }        

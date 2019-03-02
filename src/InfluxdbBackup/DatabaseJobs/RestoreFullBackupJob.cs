@@ -37,9 +37,9 @@ namespace InfluxdbBackup.DatabaseJobs
             {
                 _fileSystemHelper.CreateDirectoryIfNotExists(ConfigurationHelper.RestoreDirectory);
                 _fileSystemHelper.RemoveFiles(ConfigurationHelper.RestoreDirectory, "*");
-                var latestbackupname = await _backupMedium.DownloadLatestBackupAsync(ConfigurationHelper.RestoreDirectory);
+                var latestBackupFilepath = await _backupMedium.DownloadLatestBackupAsync(ConfigurationHelper.RestoreDirectory);
 
-                _fileSystemHelper.ExtractZipToDirectory(String.Concat(ConfigurationHelper.RestoreDirectory, @"/", latestbackupname), ConfigurationHelper.RestoreDirectory);
+                _fileSystemHelper.ExtractZipToDirectory(latestBackupFilepath, ConfigurationHelper.RestoreDirectory);
 
                 try
                 {
@@ -62,8 +62,7 @@ namespace InfluxdbBackup.DatabaseJobs
             catch (Exception e)
             {
                 _logger.Fatal("Database job failed: {0}", e.Message.ToString());
-            }
-            
+            }            
         }
       
         public void ValidateEnvironmentVariables()
