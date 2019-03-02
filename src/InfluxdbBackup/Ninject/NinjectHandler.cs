@@ -36,8 +36,11 @@ namespace InfluxdbBackup.Ninject
                 case "azureblob":
                     kernel.Bind<IBackupMedium>().To<AzureBlob>();
                     break;
+                case "localdirectory":
+                    kernel.Bind<IBackupMedium>().To<LocalDirectory>();
+                    break;
                 default:
-                    throw new ArgumentException("backup medium type not found!");
+                    throw new ArgumentException("backup medium type: '{0}' not found!", Environment.GetEnvironmentVariable("INFLUXDB_BACKUPMEDIUM").ToLower());
             }
 
             switch (Environment.GetEnvironmentVariable("INFLUXDB_ACTION").ToLower())
@@ -49,7 +52,7 @@ namespace InfluxdbBackup.Ninject
                     kernel.Bind<IDatabaseJob>().To<RestoreFullBackupJob>();
                     break;
                 default:
-                    throw new ArgumentException("database job type not found!");
+                    throw new ArgumentException("database job type: '{0}' not found!", Environment.GetEnvironmentVariable("INFLUXDB_ACTION").ToLower());
             }
 
             kernel.Bind<ILogger>().ToMethod(x =>

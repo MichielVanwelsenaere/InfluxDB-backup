@@ -38,10 +38,12 @@ namespace InfluxdbBackup
             {
                 _logger.Info("Configuring a single execution trigger for the database job");
                 trigger = TriggerBuilder.Create().StartAt(DateTime.Now.AddSeconds(3)).Build();
+                
             }
             else
             {
                 _logger.Info("Configuring a Cron execution trigger for the database job");
+                _logger.Info("Configuring Cron expression: {0}", CronExpressionDescriptor.ExpressionDescriptor.GetDescription(Environment.GetEnvironmentVariable("INFLUXDB_ACTION_CRON")));
                 trigger = TriggerBuilder.Create().StartNow().WithCronSchedule(Environment.GetEnvironmentVariable("INFLUXDB_ACTION_CRON")).Build();
             }
 
