@@ -12,12 +12,13 @@ RUN dotnet publish -c Release -o out
 
 
 # RUNTIME IMAGE
-FROM influxdb:1.6.0-alpine as influxdb
+FROM influxdb:1.7.4-alpine as influxdb
 
-FROM microsoft/dotnet:2.1-runtime-alpine3.7
+FROM microsoft/dotnet:2.2-runtime-alpine3.8
 COPY --from=influxdb /usr/bin/influxd /usr/bin/
 
-RUN apk add --no-cache tzdata bash
+RUN apk add --no-cache tzdata bash && \
+	mkdir -p /influxdbbackup/data /influxdbbackup/log 
 
 # ----------------- Create ENV variables and set default values -------------------- #
 ENV INFLUXDB_ACTION="null"
@@ -35,6 +36,8 @@ ENV BACKUP_MAXBACKUPS="1"
 ENV BACKUP_FILENAME="Influxdb_backup"
 # ---------------------------------------------------------------------------------- #
 
- WORKDIR /app
- COPY --from=build-env /app/out .
- ENTRYPOINT [ "dotnet", "InfluxdbBackup.dll" ]
+VOLUME ["/influxdbbackup/data", "/influxdbbackup/log"]
+
+WORKDIR /influxdbbackup
+COPY --from=build-env /app/out .
+ENTRYPOINT [ "dotnet", "InfluxdbBackup.dll" ]
