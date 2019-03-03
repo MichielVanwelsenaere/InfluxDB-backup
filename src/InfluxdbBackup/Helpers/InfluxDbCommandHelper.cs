@@ -1,14 +1,13 @@
+using NLog;
 using System;
 using System.Diagnostics;
-using System.IO;
 using System.Text.RegularExpressions;
-using static InfluxdbBackup.Helpers.SimpleConsoleLogger;
 
 namespace InfluxdbBackup.Helpers
 {
     static class InfluxDbCommandHelper
     {
-        internal static void CreateInfluxBackup(string host, int port, string database, string destinationDirectory)
+        internal static void CreateInfluxBackup(string host, int port, string database, string destinationDirectory, ILogger logger)
         {
             string cmd;
 
@@ -22,10 +21,10 @@ namespace InfluxdbBackup.Helpers
                 //backs up a specific database
                 cmd = String.Format("influxd backup -portable -database {0} -host {1}:{2} ./{3}", database, host, port, destinationDirectory);
             }
-            RunShellCommand(cmd);
+            RunShellCommand(cmd, logger);
         }
 
-        internal static void RestoreInfluxBackup(string host, int port, string database, string sourceDirectory)
+        internal static void RestoreInfluxBackup(string host, int port, string database, string sourceDirectory, ILogger logger)
         {
             string cmd = null;
 
@@ -37,12 +36,12 @@ namespace InfluxdbBackup.Helpers
             else
             {
                 //restores specific databases in sourcedirectory
-                cmd = String.Format("influxd backup -portable -db {0} -host {1}:{2} ./{3}", database, host, port, sourceDirectory);                
+                cmd = String.Format("influxd backup -portable -db {0} -host {1}:{2} ./{3}", database, host, port, sourceDirectory);
             }
-            RunShellCommand(cmd);
+            RunShellCommand(cmd, logger);
         }
 
-        private static void RunShellCommand(string cmd)
+        private static void RunShellCommand(string cmd, ILogger logger)
         {
             Process proc = new Process
             {
@@ -62,12 +61,12 @@ namespace InfluxdbBackup.Helpers
             {
                 if (!proc.StandardError.EndOfStream)
                 {
-                    StripInfluxTimestampAndLog(SimpleConsoleLogger.LogLevel.Critical, proc.StandardError.ReadLine());
+                    StripInfluxTimestampAndLog(LogLevel.Fatal, proc.StandardError.ReadLine(), logger);
                 }
                 if (!proc.StandardOutput.EndOfStream)
                 {
                     string log = proc.StandardOutput.ReadLine();
-                    StripInfluxTimestampAndLog(SimpleConsoleLogger.LogLevel.Info, log);
+                    StripInfluxTimestampAndLog(LogLevel.Info, log, logger);
                     if (log.Contains("(5)"))
                     {
                         proc.Kill();
@@ -78,14 +77,16 @@ namespace InfluxdbBackup.Helpers
             proc.WaitForExit();
         }
 
-        private static void StripInfluxTimestampAndLog(LogLevel logLevel, string influxdblog)
+        private static void StripInfluxTimestampAndLog(NLog.LogLevel logLevel, string influxdblog, ILogger logger)
         {
             Regex rgx = new Regex(@"\d{4}\/\d{2}\/\d{2}");
             if (rgx.IsMatch(influxdblog))
             {
-                SimpleConsoleLogger.Log(logLevel, influxdblog.Remove(0, 20));
-            }else{
-                SimpleConsoleLogger.Log(logLevel, influxdblog);
+                logger.Log(logLevel, influxdblog.Remove(0, 20));
+            }
+            else
+            {
+                logger.Log(logLevel, influxdblog);
             }
         }
     }

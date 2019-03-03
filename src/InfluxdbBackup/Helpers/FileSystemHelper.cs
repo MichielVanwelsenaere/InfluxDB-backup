@@ -1,7 +1,7 @@
 using System;
 using System.IO;
-using ICSharpCode.SharpZipLib.GZip;
-using ICSharpCode.SharpZipLib.Tar;
+using System.IO.Compression;
+using System.Linq;
 
 namespace InfluxdbBackup.Helpers
 {
@@ -21,69 +21,58 @@ namespace InfluxdbBackup.Helpers
             di.Delete(true);
         }
 
+        internal void MoveFile(string sourceFileName, string destinationFileName)
+        {
+            File.Move(sourceFileName, destinationFileName);
+        }
+
+        internal void CopyFile(string sourceFileName, string destinationFileName)
+        {
+            File.Copy(sourceFileName, destinationFileName);
+        }
+
+        internal FileSystemInfo GetOldestFile(string directory)
+        {
+            FileSystemInfo fileInfo = new DirectoryInfo(directory).GetFileSystemInfos()
+                .OrderBy(fi => fi.CreationTime).First();
+            return fileInfo;
+        }
+
+        internal FileSystemInfo GetNewestFile(string directory)
+        {
+            FileSystemInfo fileInfo = new DirectoryInfo(directory).GetFileSystemInfos()
+                .OrderBy(fi => fi.CreationTime).Last();
+            return fileInfo;
+        }
+
+        internal int CountFilesInDirectory(string directory)
+        {
+            return Directory.GetFiles(directory, "*", SearchOption.TopDirectoryOnly).Length;
+        }
+
+        internal void RemoveFile(string file)
+        {
+            File.Delete(file);
+        }
+
         internal void RemoveFiles(string dir, string file)
         {
             string[] MatchingFiles = Directory.GetFiles(dir, file);
 
-            foreach(string f in MatchingFiles)
+            foreach (string f in MatchingFiles)
             {
                 File.Delete(f);
             }
         }
 
-        internal void CreateTarGZ(string tgzFilename, string sourceDirectory)
+        internal void CreateZipFromDirectory(string zipFileName, string sourceDirectory)
         {
-
-            Stream outStream = File.Create(tgzFilename);
-            Stream gzoStream = new GZipOutputStream(outStream);
-            TarArchive tarArchive = TarArchive.CreateOutputTarArchive(gzoStream);
-
-            tarArchive.RootPath = sourceDirectory.Replace('\\', '/');
-            if (tarArchive.RootPath.EndsWith("/"))
-                tarArchive.RootPath = tarArchive.RootPath.Remove(tarArchive.RootPath.Length - 1);
-
-            AddDirectoryFilesToTar(tarArchive, sourceDirectory, true);
-
-            tarArchive.Close();
+            ZipFile.CreateFromDirectory(sourceDirectory, String.Concat(zipFileName));
         }
 
-        internal void ExtractTarGZ(String gzArchiveName, String destFolder)
+        internal void ExtractZipToDirectory(string zipSourcePath, string destinationDirectory)
         {
-            Stream inStream = File.OpenRead(gzArchiveName);
-            Stream gzipStream = new GZipInputStream(inStream);
-
-            TarArchive tarArchive = TarArchive.CreateInputTarArchive(gzipStream);
-            tarArchive.ExtractContents(destFolder);
-            tarArchive.Close();
-
-            gzipStream.Close();
-            inStream.Close();
-        }
-
-        private void AddDirectoryFilesToTar(TarArchive tarArchive, string sourceDirectory, bool recurse)
-        {
-
-            // Optionally, write an entry for the directory itself.
-            // Specify false for recursion here if we will add the directory's files individually.
-            //
-            TarEntry tarEntry = TarEntry.CreateEntryFromFile(sourceDirectory);
-            tarArchive.WriteEntry(tarEntry, false);
-
-            // Write each file to the tar.
-            //
-            string[] filenames = Directory.GetFiles(sourceDirectory);
-            foreach (string filename in filenames)
-            {
-                tarEntry = TarEntry.CreateEntryFromFile(filename);
-                tarArchive.WriteEntry(tarEntry, true);
-            }
-
-            if (recurse)
-            {
-                string[] directories = Directory.GetDirectories(sourceDirectory);
-                foreach (string directory in directories)
-                    AddDirectoryFilesToTar(tarArchive, directory, recurse);
-            }
+            ZipFile.ExtractToDirectory(zipSourcePath, destinationDirectory);
         }
     }
 }
