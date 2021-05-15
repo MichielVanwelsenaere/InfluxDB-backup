@@ -18,7 +18,7 @@
   <ItemGroup>
     <PackageReference Include="CronExpressionDescriptor" Version="2.9.0" />
     <PackageReference Include="Ninject" Version="3.3.4" />
-    <PackageReference Include="NLog" Version="4.5.11" />
+    <PackageReference Include="NLog" Version="4.7.10" />
     <PackageReference Include="NLog.Extensions.Logging" Version="1.4.0" />
     <PackageReference Include="Quartz" Version="3.0.7" />
     <PackageReference Include="windowsazure.storage" Version="9.3.3" />
